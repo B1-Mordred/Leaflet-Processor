@@ -8,6 +8,18 @@ $AppName = "Chromsystems Universal Leaflet Parser 0.1.0"
 $EntryScript = "run_app.py"
 $IconPath = "assets\favicon.ico"
 
+$ExcludedModules = @(
+    "numpy",
+    "pandas",
+    "scipy",
+    "matplotlib",
+    "PIL",
+    "pytest",
+    "setuptools",
+    "yaml",
+    "reportlab"
+)
+
 if (-not (Test-Path $EntryScript)) {
     throw "Entry script not found: $EntryScript"
 }
@@ -30,6 +42,10 @@ if (Test-Path $IconPath) {
 
 if ($OneFile) {
     $baseArgs += "--onefile"
+}
+
+foreach ($moduleName in $ExcludedModules) {
+    $baseArgs += @("--exclude-module", $moduleName)
 }
 
 Write-Host "Building executable for '$AppName'..."
