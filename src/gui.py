@@ -8,7 +8,7 @@ from tkinter import filedialog, messagebox, ttk
 from .config import XmlConfig, load_gui_defaults, save_gui_defaults
 from .models import MeasurementRecord, WorkbookParseResult
 from .parser import parse_folder, parse_workbook
-from .xml_exporter import write_addon_xml
+from .xml_exporter import write_consolidated_addon_xml
 
 
 class ExcelParserApp:
@@ -240,18 +240,15 @@ class ExcelParserApp:
             return
         cfg = self._collect_config()
         save_gui_defaults(cfg)
-        exported = []
         try:
-            for result in self.results:
-                out_path = write_addon_xml(result=result, cfg=cfg, out_dir=Path(out_dir))
-                exported.append(out_path)
+            out_path = write_consolidated_addon_xml(results=self.results, cfg=cfg, out_dir=Path(out_dir))
         except Exception as exc:
             self._log(f"[ERROR] XML export failed: {exc}")
             messagebox.showerror("XML export failed", str(exc))
             return
 
-        self._log(f"Exported {len(exported)} XML file(s) to: {out_dir}")
-        messagebox.showinfo("XML export complete", f"Exported {len(exported)} XML file(s).")
+        self._log(f"Exported consolidated XML to: {out_path}")
+        messagebox.showinfo("XML export complete", "Exported 1 consolidated XML file.")
 
     def clear_results(self) -> None:
         self.results = []
