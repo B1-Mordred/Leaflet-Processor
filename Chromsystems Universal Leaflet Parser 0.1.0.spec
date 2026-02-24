@@ -5,7 +5,7 @@ a = Analysis(
     ['run_app.py'],
     pathex=[],
     binaries=[],
-    datas=[('assets\\favicon.ico', 'assets')],
+    datas=[('assets\\favicon.ico', 'assets'), ('template\\AddOn.xsd', 'template')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

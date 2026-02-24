@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from xml.etree import ElementTree as ET
 
 from src.config import XmlConfig
 from src.models import AnalyteDef, WorkbookMeta, WorkbookParseResult
-from src.xml_exporter import build_addon_xml, validate_addon_xml
+from src.xml_exporter import _EMBEDDED_ADDON_XSD, build_addon_xml, validate_addon_xml
 
 
 def _build_result() -> WorkbookParseResult:
@@ -59,9 +61,14 @@ def test_generated_xml_validates_against_addon_xsd():
     validate_addon_xml(xml_text)
 
 
-def test_generated_xml_validation_uses_repo_relative_xsd(tmp_path, monkeypatch):
+def test_generated_xml_validation_does_not_require_external_xsd(tmp_path, monkeypatch):
     xml_text = build_addon_xml(_build_result(), XmlConfig())
     monkeypatch.chdir(tmp_path)
 
-    # Should still find template/AddOn.xsd relative to the project, not cwd.
+    # Validation should still work even if no template/AddOn.xsd exists near cwd.
     validate_addon_xml(xml_text)
+
+
+def test_embedded_schema_matches_template_xsd():
+    template_xsd = Path("template/AddOn.xsd").read_text(encoding="utf-8-sig")
+    assert _EMBEDDED_ADDON_XSD == template_xsd

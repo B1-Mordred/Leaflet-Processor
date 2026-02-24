@@ -36,6 +36,7 @@ $baseArgs = @(
 if (Test-Path $IconPath) {
     $baseArgs += @("--icon", $IconPath)
     $baseArgs += @("--add-data", "assets\favicon.ico;assets")
+    $baseArgs += @("--add-data", "template\AddOn.xsd;template")
 } else {
     Write-Warning "Icon not found at '$IconPath'. Building without custom icon."
 }
