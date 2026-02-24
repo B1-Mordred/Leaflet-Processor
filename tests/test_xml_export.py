@@ -150,3 +150,52 @@ def test_consolidated_xml_uses_group_name_sample_code_and_unit_mappings():
     assert blank_assay_analyte.findtext("AssayRef") == "0"
 
     validate_addon_xml(xml_text)
+
+
+def test_consolidated_xml_deduplicates_analytes_within_assay():
+    rec1 = MeasurementRecord(
+        source_file="one.xlsx",
+        sample_label="S1",
+        sample_code="",
+        unit="mg/L",
+        analyte_name=" Retinol ",
+        group_name="Vitamin Assay",
+        metric_role="target",
+        raw_value="1.2",
+        numeric_value=1.2,
+        value_status="ok",
+        sheet_row=10,
+        sheet_col=5,
+    )
+    rec2 = MeasurementRecord(
+        source_file="two.xlsx",
+        sample_label="S2",
+        sample_code="27",
+        unit="μmol/L",
+        analyte_name="retinol",
+        group_name="Vitamin Assay",
+        metric_role="target",
+        raw_value="3.4",
+        numeric_value=3.4,
+        value_status="ok",
+        sheet_row=11,
+        sheet_col=5,
+    )
+
+    result = WorkbookParseResult(
+        source_file="mix.xlsx",
+        workbook_meta=WorkbookMeta(),
+        normalized_values=[rec1, rec2],
+    )
+
+    xml_text = build_consolidated_addon_xml([result], XmlConfig())
+    root = ET.fromstring(xml_text)
+
+    analytes = root.findall("./Assays/Assay/Analytes/Analyte")
+    assert len(analytes) == 1
+    assert analytes[0].findtext("Name") == "Retinol"
+    assert analytes[0].findtext("AssayRef") == "27"
+
+    unit_names = [u.findtext("Name") for u in analytes[0].findall("./AnalyteUnits/AnalyteUnit")]
+    assert unit_names == ["mg/L", "μmol/L"]
+

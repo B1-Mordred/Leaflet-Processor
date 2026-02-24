@@ -82,15 +82,13 @@ def build_consolidated_addon_xml(results: list[WorkbookParseResult], cfg: XmlCon
         ET.SubElement(assay_el, "AddOnRef").text = "0"
 
         analytes_el = ET.SubElement(assay_el, "Analytes")
-        analyte_by_name: dict[str, list[MeasurementRecord]] = {}
-        for rec in assay_records:
-            analyte_by_name.setdefault(rec.analyte_name, []).append(rec)
+        analyte_buckets = _bucket_analytes_by_name(assay_records)
 
-        for analyte_name, analyte_records in sorted(analyte_by_name.items()):
+        for _, analyte_records in sorted(analyte_buckets.items()):
             analyte_el = ET.SubElement(analytes_el, "Analyte")
             ET.SubElement(analyte_el, "Id").text = "0"
-            ET.SubElement(analyte_el, "Name").text = analyte_name
-            ET.SubElement(analyte_el, "AssayRef").text = str(_as_int_or_zero(analyte_records[0].sample_code))
+            ET.SubElement(analyte_el, "Name").text = analyte_records[0].analyte_name.strip()
+            ET.SubElement(analyte_el, "AssayRef").text = str(_pick_assay_ref(analyte_records))
 
             units = sorted({(rec.unit or "") for rec in analyte_records})
             analyte_units_el = ET.SubElement(analyte_el, "AnalyteUnits")
@@ -186,6 +184,22 @@ def _group_measurements_by_assay_name(
             grouped.setdefault(assay_name, []).append(rec)
     return dict(sorted(grouped.items()))
 
+
+
+def _bucket_analytes_by_name(assay_records: list[MeasurementRecord]) -> dict[str, list[MeasurementRecord]]:
+    buckets: dict[str, list[MeasurementRecord]] = {}
+    for rec in assay_records:
+        key = rec.analyte_name.strip().casefold()
+        buckets.setdefault(key, []).append(rec)
+    return buckets
+
+
+def _pick_assay_ref(analyte_records: list[MeasurementRecord]) -> int:
+    for rec in analyte_records:
+        parsed = _as_int_or_zero(rec.sample_code)
+        if parsed != 0:
+            return parsed
+    return 0
 
 def _as_int_or_zero(value: str | None) -> int:
     if value is None:
