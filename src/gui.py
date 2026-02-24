@@ -241,9 +241,15 @@ class ExcelParserApp:
         cfg = self._collect_config()
         save_gui_defaults(cfg)
         exported = []
-        for result in self.results:
-            out_path = write_addon_xml(result=result, cfg=cfg, out_dir=Path(out_dir))
-            exported.append(out_path)
+        try:
+            for result in self.results:
+                out_path = write_addon_xml(result=result, cfg=cfg, out_dir=Path(out_dir))
+                exported.append(out_path)
+        except Exception as exc:
+            self._log(f"[ERROR] XML export failed: {exc}")
+            messagebox.showerror("XML export failed", str(exc))
+            return
+
         self._log(f"Exported {len(exported)} XML file(s) to: {out_dir}")
         messagebox.showinfo("XML export complete", f"Exported {len(exported)} XML file(s).")
 

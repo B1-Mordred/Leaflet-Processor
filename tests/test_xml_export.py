@@ -57,3 +57,11 @@ def test_xml_contains_multi_unit_analyte():
 def test_generated_xml_validates_against_addon_xsd():
     xml_text = build_addon_xml(_build_result(), XmlConfig())
     validate_addon_xml(xml_text)
+
+
+def test_generated_xml_validation_uses_repo_relative_xsd(tmp_path, monkeypatch):
+    xml_text = build_addon_xml(_build_result(), XmlConfig())
+    monkeypatch.chdir(tmp_path)
+
+    # Should still find template/AddOn.xsd relative to the project, not cwd.
+    validate_addon_xml(xml_text)
