@@ -35,3 +35,12 @@ powershell -ExecutionPolicy Bypass -File .\build_exe.ps1 -OneFile
 Output executable:
 
 `dist\Chromsystems Universal Leaflet Parser 0.1.0.exe`
+
+## XML export behavior
+
+- Export now generates a single consolidated XML file named `consolidated.xml` from all currently imported Excel files.
+- Mapping rules used in the consolidated XML:
+  - Excel `group name` -> `Assays/Assay/Name`
+  - Excel `sample code` -> `Assays/Assay/Analytes/Analyte/AssayRef` (defaults to `0` when missing or non-numeric)
+  - Excel unit -> `Assays/Assay/Analytes/Analyte/AnalyteUnits/AnalyteUnit/Name`
+- Any unassigned integer ID fields are written as `0`.
