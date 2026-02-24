@@ -63,7 +63,7 @@ def write_addon_xml(result: WorkbookParseResult, cfg: XmlConfig, out_dir: Path) 
 
 
 def validate_addon_xml(xml_text: str, xsd_path: Path | None = None) -> None:
-    _ = ET.parse(xsd_path or Path("template/AddOn.xsd"))
+    _ = ET.parse(xsd_path or _default_xsd_path())
     root = ET.fromstring(xml_text)
 
     if root.tag != "AddOn":
@@ -106,3 +106,7 @@ def _require_int(parent: ET.Element, child_name: str) -> None:
         raise ValueError(
             f"Generated AddOn XML failed XSD validation: {child_name} must be an integer under {parent.tag}"
         ) from exc
+
+
+def _default_xsd_path() -> Path:
+    return Path(__file__).resolve().parents[1] / "template" / "AddOn.xsd"
